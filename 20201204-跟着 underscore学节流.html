@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    #container {
+      width: 100%;
+      height: 200px;
+      line-height: 200px;
+      text-align: center;
+      color: #fff;
+      background-color: #444;
+      font-size: 30px;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    节流的原理很简单：如果你持续触发事件，每隔一段时间，只执行一次事件。<br />
+    关于节流的实现，有两种主流的实现方式，一种是使用时间戳，一种是设置定时器。
+  </div>
+  <div id="container"></div>
+  <script>
+    var count = 1;
+    var container = document.getElementById('container')
+
+    function throttle(func, wait) {
+      var timeout;
+      var previous = 0;
+      return function () {
+        context = this;
+        args = arguments;
+        // 因为setTimeOut有误差，所以有可能到时间了定时器还没有执行，就会进入时间戳判断逻辑，所以要把定时器删掉
+        // 因为定时器并不是准确的时间，很可能你设置了2秒，但是他需要2.2秒才触发，这时候就会进入这个条件
+        if (!timeout) {
+          timeout = setTimeout(function () {
+            timeout = null;
+            func.apply(context, args)
+          }, wait)
+          // func.apply(context, args) // 这句话放到这里就会立即执行，但是这样事件停止了就不会再触发最后一次了
+        }
+      }
+    }
+
+
+    container.onmousemove = throttle(getUserAction, 3000);
+  </script>
+</body>
+
+</html>
