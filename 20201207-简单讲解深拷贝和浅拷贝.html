@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    // 深拷贝方法：
+    function deepClone(obj) {
+      if (Array.isArray(obj)) {
+        return obj.map(deepClone)
+      } else if (obj && typeof obj === 'object') {
+        var cloned = {}
+        var keys = Object.keys(obj)
+        for (var i = 0, l = keys.length; i < l; i++) {
+          var key = keys[i]
+          cloned[key] = deepClone(obj[key])
+        }
+        return cloned
+      } else {
+        return obj
+      }
+    }
+
+
+    // 使用 concat 和 slice 是一种浅拷贝
+    // 如果数组元素是基本类型，就会拷贝一份，互不影响，而如果是对象或者数组，就会只拷贝对象和数组的引用，这样我们无论在新旧数组进行了修改，两者都会发生变化。
+    var arr = ['old', 1, true, null, undefined];
+    var new_arr = arr.concat();
+    // var new_arr = arr.slice();
+    new_arr[0] = 'new';
+    console.log(arr) // ["old", 1, true, null, undefined]
+    console.log(new_arr) // ["new", 1, true, null, undefined]
+
+    // 那如何深拷贝一个数组呢？
+    var arr1 = [function () {
+      console.log(a)
+    }, {
+      b: function () {
+        console.log(b)
+      }
+    }]
+    var new_arr1 = JSON.parse(JSON.stringify(arr1));
+
+    console.log(new_arr1);
+
+    // 实现一个对象或者数组的浅拷贝
+    // 想一想，好像很简单，遍历对象，然后把属性和属性值都放在一个新的对象不就好了~嗯， 就是这么简单，
+    var shallowCopy = function (obj) {
+      // 只拷贝对象
+      if (typeof obj !== 'object') return;
+      // 根据obj的类型判断是新建一个数组还是对象
+      var newObj = obj instanceof Array ? [] : {};
+      // 遍历obj，并且判断是obj的属性才拷贝
+      for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          newObj[key] = obj[key];
+        }
+      }
+      return newObj;
+    }
+
+    // 深拷贝的实现
+    // 也简单，我们在拷贝的时候判断一下属性值的类型，如果是对象，我们递归调用深拷贝函数不就好了~
+    var deepCopy = function (obj) {
+      if (typeof obj !== 'object') return;
+      var newObj = obj instanceof Array ? [] : {};
+      for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          newObj[key] = typeof obj[key] === 'object' ? deepCopy(obj[key]) : obj[key];
+        }
+      }
+      return newObj;
+    }
+  </script>
+</body>
+
+</html>

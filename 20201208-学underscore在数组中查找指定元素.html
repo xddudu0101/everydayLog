@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>学underscore在数组中查找指定元素</title>
+</head>
+
+<body>
+  <script>
+    //方法1：findIndex ，ES6 对数组新增了 findIndex 方法，它会返回数组中满足提供的函数的第一个元素的索引，否则返回 -1。
+    function isBigEnough1(element) {
+      return element >= 15;
+    }
+
+    [12, 5, 8, 130, 44].findIndex1(isBigEnough); // 3
+
+    // 方法2：我们自己去实现一个 findIndex 遍历一遍，返回符合要求的值的下标即可也很简单
+
+    function findIndex2(array, predicate, context) {
+      for (var i = 0; i < array.length; i++) {
+        if (predicate.call(context, array[i], i, array)) return i;
+      }
+      return -1;
+    }
+    console.log(findIndex2([1, 2, 3, 4], function (item, i, array) {
+      if (item == 3) return true;
+    })) // 2
+    // 方法3：我们自己去实现一个 findLastIndex 
+    // 我们也想写一个倒序查找的 findLastIndex 函数。实现自然也很简单，只要修改下循环即可。
+    function findLastIndex3(array, predicate, context) {
+      var length = array.length;
+      for (var i = length - 1; i >= 0; i--) {
+        if (predicate.call(context, array[i], i, array)) return i;
+      }
+      return -1;
+    }
+    console.log(findLastIndex3([1, 2, 3, 4], function (item, i, array) {
+      if (item == 1) return true;
+    })) //0
+
+    // 方法4：createIndexFinder,然而问题在于，findIndex 和 findLastIndex 其实有很多重复的部分，如何精简冗余的内容呢？
+    // underscore 的思路就是利用传参的不同，返回不同的函数。这个自然是简单，但是如何根据参数的不同，在同一个循环中，实现正序和倒序遍历呢？
+    function createIndexFinder(dir) {
+      return function (array, predicate, context) {
+        var length = array.length;
+        var index = dir > 0 ? 0 : length - 1;
+        for (; index >= 0 && index < length; index += dir) {
+          if (predicate.call(context, array[index], index, array)) return index;
+        }
+      }
+    }
+    var findIndex4 = createIndexFinder(1);
+    var findLastIndex4 = createIndexFinder(-1);
+
+    // 方法5:在一个排好序的数组中找到 value 对应的位置，保证插入数组后，依然保持有序的状态。
+    // 既然是有序的数组，那我们就不需要遍历，大可以使用二分查找法，确定值的位置。
+    function cb(func, context) {
+      if (context === void 0) return func;
+      return function () {
+        return func.apply(context, arguments);
+      };
+    }
+
+    function sortedIndex5(array, obj, iteratee, context) {
+      iteratee = cb(iteratee, context) //涉及到 this 指向的问题，所以我们再传一个 context 来让我们可以指定 this
+      var low = 0,
+        high = array.length;
+      while (low < high) {
+        var mid = Math.floor((low + high) / 2);
+        if (iteratee(array[mid]) < iteratee(obj)) low = mid + 1;
+        else high = mid;
+      }
+
+      return high;
+    }
+    console.log(sortedIndex5([10, 20, 30, 40, 50], 35)) // 3
+  </script>
+</body>
+
+</html>
