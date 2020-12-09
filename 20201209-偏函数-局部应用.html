@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>偏函数/局部应用</title>
+</head>
+
+<body>
+  <script>
+    // 第一版 似曾相识的代码
+    function partial1(fn) {
+      var args = [].slice.call(arguments, 1);
+      return function () {
+        var newArgs = args.concat([].slice.call(arguments));
+        return fn.apply(this, newArgs);
+      };
+    };
+    // 第二版，非常好:偏函数/局部应用
+    // 在计算机科学中， 局部应用是指固定一个函数的一些参数， 然后产生另一个更小元的函数。
+    // 什么是元？ 元是指函数参数的个数， 比如一个带有两个参数的函数被称为二元函数。
+    // 柯里化是将一个多参数函数转换成多个单参数函数，也就是将一个 n 元函数转换成 n 个一元函数。
+    // 局部应用则是固定一个函数的一个或者多个参数，也就是将一个 n 元函数转换成一个 n - x 元函数。
+    var _ = {};
+
+    function partial2(fn) {
+      var args = [].slice.call(arguments, 1); // 只剩下传进来的参数，没有fn
+      return function () {
+        var position = 0,
+          len = args.length;
+        for (var i = 0; i < len; i++) {
+          args[i] = args[i] === _ ? arguments[position++] : args[i]
+        }
+        while (position < arguments.length) args.push(arguments[position++]);
+        return fn.apply(this, args);
+      };
+    }
+
+    // 第三版,太牛了： es6简化版
+    function partial3(func, ...argsBound) {
+      return function (...args) {
+        return func.call(this, ...argsBound, ...args);
+      };
+    }
+
+    var subtract = function (a, b) {
+      return b - a;
+    };
+    // subFrom20 = partial1(subtract, 1, 12);
+    // subFrom20 = partial2(subtract, _, 12); // 这个只有第二版可以用.对_做判断
+    subFrom20 = partial3(subtract, 1, 12);
+
+    console.log('subFrom20---', subFrom20(5, 20))
+  </script>
+</body>
+
+</html>
