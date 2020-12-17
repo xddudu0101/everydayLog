@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>一道题目了解js基础知识点</title>
+</head>
+
+<body>
+  <div>
+    考察以下知识点:
+    1、this的指向
+    2、原型(prototype)以及原型链
+    3、类的继承
+    4、原始类型和引用类型的区别
+  </div>
+  <div>
+    <h4>1、每一个构造函数，都有一个原型[[prototype]]属性， 指向构造函数的原型对象，</h4>
+    <h4>实例会共享同一个原型对象</h4>
+    <h4>2、每一个实例生成的时候，都会在内存中产生一块新的堆内存。</h4>
+    <h4>对实例的一般操作将不影响其他实例，因为在堆内存里占据不同空间，互不影响</h4>
+    <h4>3、每一实例都有一个隐式原型__proto__ 指向构造函数的原型对象</h4>
+    <h4>4、this的指向 取决于this调用时的位置</h4>
+    <h4>4-1、在这道题中， 也可以简单理解为， 谁调用方法， this就指向哪个对象</h4>
+    <h4>4-2、作为函数调用时，指向全局顶层变量window</h4>
+    <h4>4-3、作为构造函数调用时，即new操作符生成实例时，构造函数中的this指向实例</h4>
+    <h4>4-4、call和apply方法中，显示指定this的绑定为指定上下文</h4>
+
+    <h4>5、数组和字面量对象 都是 引用</h4>
+    <h4>6、原型链的查找规则： 就近原则</h4>
+    <h4>6-1、当实例上存在属性时， 用实例上的</h4>
+    <h4>6-2、如果实例不存在，顺在原型链，往上查找，如果存在，就使用原型链的</h4>
+    <h4>6-3、如果原型链都不存在，就用Object原型对象上的</h4>
+    <h4>6-4、如果Object原型对象都不存在， 就是undefined
+
+    </h4>
+
+  </div>
+  <script>
+    function Parent() {
+      this.a = 1;
+      this.b = [1, 2, this.a]
+      this.c = {
+        demo: 5
+      }
+      console.log('Parent的this---是Parent', this)
+      this.show = function () {
+        console.log('Parent的show的this', this)
+        console.log(this.a, this.b, this.c.demo)
+      }
+    }
+
+    function Child() {
+      this.a = 2;
+      console.log('Child的this---是child', this)
+
+      this.change = function () {
+        console.log('Child的change的this', this)
+        this.b.push(this.a)
+        this.a = this.b.length; //改变了a的值
+        this.c.demo = this.a++; // 对a后加1
+        console.log(this.a, this.b, this.c.demo)
+      }
+    }
+    Child.prototype = new Parent()
+    var parent = new Parent();
+    var child1 = new Child();
+    var child2 = new Child();
+    child1.a = 11;
+    child2.a = 12;
+    // parent.show(); // 1,[1,2,1],5
+    // child1.show(); // 11,[1,2,1],5 
+    // this.b数组的最后一项是一个引用,此处的指针并不是一个动态指向,因为在new Parent()这一步的时候它已经被执行过一次，确定指向了parent.a所指向的资源，也就是child1.__proto__中的a属性所指向的资源，即数值1
+    // child2.show(); // 12,[1,2,1],5
+    child1.change(); // 5,[1,2,1,11],4  // 为什么this.a,this.b的值会保留？？？
+    // child2执行了change()方法, 而child2和child1均是Child类的实例，
+    // 所以他们的原型链指向同一个原型对象Child.prototype,也就是同一个parent实例，
+    // 所以child2.change()中所有影响到原型对象的语句都会影响child1的最终输出结果
+    child2.change(); // 6,[1,2,1,11,12],5
+    console.log('child1----', child1)
+    console.log('Parent----', Parent)
+
+    // parent.show(); // 1,[1,2,1],5
+    child1.show(); // 5,[1,2,1,11,12],5
+    child2.show(); // 6,[1,2,1,11,12],5
+  </script>
+</body>
+
+</html>

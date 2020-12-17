@@ -5,37 +5,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>简易JavaScript 中 call()、apply()、bind() 的用法</title>
+  <title>函数记忆</title>
 </head>
 
 <body>
+  <div>
+    函数记忆是指将上次的计算结果缓存起来，当下次调用时，如果遇到相同的参数，就直接返回缓存中的数据。
+  </div>
   <script>
-    var name = '小王',
-      age = 18;
-    var obj = {
-      name: '嚣张',
-      objAge: this.age,
-      myFun: function (fm, t) {
-        // this 指向 obj
-        console.log(this, this.name + '年龄' + this.age + fm + ' ' + t)
+    function add(a, b) {
+      return a + b;
+    }
+
+    function memoize1(f) {
+      var cache = {}
+      return function () {
+        var key = arguments.length + Array.prototype.join.call(arguments, ',')
+        if (key in cache) {
+          return cache[key]
+        } else {
+          console.log(111, this, arguments)
+
+          return cache[key] = f.apply(this, arguments)
+        }
       }
     }
-    var db = {
-      name: '德国',
-      age: 99
-    }
-    obj.myFun.call(db, '成都', '上海');
-    obj.myFun.apply(db, ['成都', '上海']);
-    obj.myFun.bind(db, '成都', '上海')();
-    obj.myFun.bind(db, ['成都', '上海'])()
+    // 假设 memoize 可以实现函数记忆
+    var memoizedAdd = memoize1(add);
 
-    var fav = '忙僧'
-
-    function shows() {
-      // this 是 window
-      console.log(this.fav)
-    }
-    shows() // 盲僧
+    console.log(memoizedAdd(1, 2)) // 3
+    console.log(memoizedAdd(1, 2)) // 相同的参数，第二次调用时，从缓存中取出数据，而非重新计算一次
   </script>
 </body>
 
