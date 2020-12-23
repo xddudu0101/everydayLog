@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>乱序</title>
+</head>
+
+<body>
+  <div>乱序的意思就是将数组打乱。</div>
+  <script>
+    // 一个经常会遇见的写法是使用 Math.random()：
+    var values1 = [1, 2, 3, 4, 5];
+
+    values1.sort(function () {
+      return Math.random() - 0.5;
+      // Math.random() - 0.5 随机得到一个正数、负数或是 0，如果是正数则降序排列，如果是负数则升序排列，如果是 0 就不变，然后不断的升序或者降序，最终得到一个乱序的数组。
+    });
+
+    console.log(values1)
+    // 测试Demo --- start: 将 [1, 2, 3, 4, 5] 乱序 10 万次，计算乱序后的数组的最后一个元素是 1、2、3、4、5 的次数分别是多少。
+    var times2 = [0, 0, 0, 0, 0];
+
+    for (var i = 0; i < 100000; i++) {
+      let arr = [1, 2, 3, 4, 5];
+      arr.sort(() => Math.random() - 0.5);
+      times2[arr[4] - 1]++;
+    }
+    console.log(times2)
+    // 测试Demo --- end
+
+    // 插入排序的源码是 --- start：其原理在于将第一个元素视为有序序列，遍历数组，将之后的元素依次插入这个构建的有序序列中。
+    function InsertionSort(a, from, to) {
+      for (var i = from + 1; i < to; i++) {
+        var element = a[i];
+        for (var j = i - 1; j >= from; j--) {
+          var tmp = a[j];
+          var order = comparefn(tmp, element);
+          if (order > 0) {
+            a[j + 1] = tmp;
+          } else {
+            break;
+          }
+        }
+        a[j + 1] = element;
+      }
+    };
+    // 插入排序的源码是 --- end:其原理在于将第一个元素视为有序序列，遍历数组，将之后的元素依次插入这个构建的有序序列中。
+
+    // Fisher–Yates --- start
+    function shufflt4(a) {
+      var j, x, i;
+      for (i = a.length; i; i--) {
+        console.log(i)
+        j = Math.floor(Math.random() * i);
+        console.log(j)
+        x = a[i - 1];
+        a[i - 1] = a[j];
+        a[j] = x;
+      }
+
+      return a;
+    }
+    shufflt4([1, 2, 3, 4])
+    // Fisher–Yates --- end
+    // Fisher–Yates优化ES6 --- start
+    function shuffle(a) {
+      for (let i = a.length; i; i--) {
+        let j = Math.floor(Math.random() * i);
+        [a[i - 1], a[j]] = [a[j], a[i - 1]];
+      }
+      return a;
+    }
+    // Fisher–Yates优化ES6 --- end
+  </script>
+</body>
+
+</html>
