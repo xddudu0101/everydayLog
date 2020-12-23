@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>函数记忆</title>
+</head>
+
+<body>
+  <div>
+    函数记忆是指将上次的计算结果缓存起来，当下次调用时，如果遇到相同的参数，就直接返回缓存中的数据。
+  </div>
+  <script>
+    function add(a, b) {
+      return a + b;
+    }
+
+    function memoize1(f) {
+      var cache = {}
+      return function () {
+        var key = arguments.length + Array.prototype.join.call(arguments, ',')
+        if (key in cache) {
+          return cache[key]
+        } else {
+          console.log(111, this, arguments)
+          return cache[key] = f.apply(this, arguments)
+        }
+      }
+    }
+    // 假设 memoize 可以实现函数记忆
+    var memoizedAdd = memoize1(add);
+
+    // console.log(memoizedAdd(1, 2)) // 3
+    // console.log(memoizedAdd(1, 2)) // 相同的参数，第二次调用时，从缓存中取出数据，而非重新计算一次
+    // 第二种方法
+    var memoize2 = function (func, hasher) {
+      var memoize2 = function (key) {
+        var cache = memoize2.cache
+        var address = '' + (hasher ? hasher.apply(this, arguments) : key)
+        if (!cache[address]) {
+          cache[address] = func.apply(this, arguments)
+        }
+        return cache[address]
+      }
+      memoize2.cache = {}
+      return memoize2;
+    }
+    var add2 = function (a, b, c) {
+      return a + b + c
+    }
+
+    var memoizedAdd2 = memoize2(add2, function () {
+      var args = Array.prototype.slice.call(arguments)
+      return JSON.stringify(args); // 如果使用 JSON.stringify，参数是对象的问题也可以得到解决，因为存储的是对象序列化后的字符串。
+    })
+
+    console.log(memoizedAdd2(1, 2, 3)) // 6
+    console.log(memoizedAdd2(1, 2, 4)) // 6
+
+    // 适用场景,我们以斐波那契数列为例：
+    var count3 = 0;
+    var fibonacci = function (n) {
+      count3++;
+      return n < 2 ? n : fibonacci(n - 1) + fibonacci(n - 2)
+    }
+    for (var i = 0; i <= 10; i++) {
+      fibonacci(i)
+    }
+    console.log(count3) // 453
+
+    // 如果我们改成函数记忆
+    var count4 = 0;
+    var fibonacci4 = function (n) {
+      count4++;
+      return n < 2 ? n : fibonacci4(n - 1) + fibonacci4(n - 2)
+    }
+    fibonacci4 = memoize2(fibonacci4)
+    for (let i = 0; i <= 10; i++) {
+      fibonacci4(i)
+    }
+    console.log(count4)
+  </script>
+</body>
+
+</html>

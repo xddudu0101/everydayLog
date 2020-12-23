@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>递归</title>
+</head>
+
+<body>
+  <div>程序调用自身的编程技巧称为递归(recursion)。</div>
+  <script>
+    // 阶乘
+    function factorial(n, res) {
+      if (n === 1) return res;
+      return factorial(n - 1, n * res);
+    }
+    console.log(factorial(4, 1)) // 24
+
+    function fibonacci(n) {
+      return n < 2 ? n : fibonacci(n - 1) + fibonacci(n - 2)
+    }
+    console.log(fibonacci(5))
+
+    // 应用场景1：数组扁平化
+    function flatten(arr) {
+      return arr.reduce(function (prev, next) {
+        return prev.concat(Array.isArray(next) ? flatten(next) : next)
+      }, [])
+    }
+
+    // 应用场景2：深拷贝
+    var deepCopy = function (obj) {
+      if (typeof obj !== 'object') return;
+      var newObj = obj instanceof Array ? [] : {}
+      for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          newObj[key] = typeof obj[key] === "object" ? deepCopy(obj[key]) : obj[key];
+        }
+      }
+      return newObj;
+    }
+  </script>
+</body>
+
+</html>

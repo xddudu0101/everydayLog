@@ -4,37 +4,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>函数记忆</title>
+  <title>Document</title>
 </head>
 
 <body>
-  <div>
-    函数记忆是指将上次的计算结果缓存起来，当下次调用时，如果遇到相同的参数，就直接返回缓存中的数据。
-  </div>
   <script>
-    function add(a, b) {
-      return a + b;
+    // 方法一：常见的乱序
+    var values = [1, 2, 3, 4, 5];
+    values.sort(function () {
+      return Math.random() - 0.5;
+      //随机得到一个正数、负数或是 0，如果是正数则降序排列，如果是负数则升序排列，如果是 0 就不变，然后不断的升序或者降序，最终得到一个乱序的数组。
+    })
+    console.log(values)
+
+    // 计算次数：将 [1, 2, 3, 4, 5] 乱序 10 万次，计算乱序后的数组的最后一个元素是 1、2、3、4、5 的次数分别是多少
+    var times = [0, 0, 0, 0, 0]
+    for (let i = 0; i < 5; i++) {
+      let arr = [1, 2, 3, 4, 5]
+      arr.sort(() => Math.random() - 0.5)
+      console.log('----', times[arr[4] - 1])
+      times[arr[4] - 1]++; // 给数组的某一项赋值
     }
+    console.log(times)
 
-    function memoize1(f) {
-      var cache = {}
-      return function () {
-        var key = arguments.length + Array.prototype.join.call(arguments, ',')
-        if (key in cache) {
-          return cache[key]
-        } else {
-          console.log(111, this, arguments)
+    // 方法二：优化的乱序：Fisher–Yates
+    function shuffle(a) {
+      var j, x, i;
+      for (i = a.length; i; i--) {
 
-          return cache[key] = f.apply(this, arguments)
-        }
       }
     }
-    // 假设 memoize 可以实现函数记忆
-    var memoizedAdd = memoize1(add);
-
-    console.log(memoizedAdd(1, 2)) // 3
-    console.log(memoizedAdd(1, 2)) // 相同的参数，第二次调用时，从缓存中取出数据，而非重新计算一次
   </script>
 </body>
 
