@@ -111,17 +111,9 @@
         left = arr.slice(0, middle),
         right = arr.slice(middle);
       return merge(mergeSort(left), mergeSort(right));
->>>>>>> dd36afc52be66fb27ce3e139e1f274cac07f400a
     }
     console.log(times)
 
-<<<<<<< HEAD
-    // 方法二：优化的乱序：Fisher–Yates
-    function shuffle(a) {
-      var j, x, i;
-      for (i = a.length; i; i--) {
-
-=======
     function merge(left, right) {
       var result = [];
       while (left.length > 0 && right.length > 0) {
@@ -240,12 +232,9 @@
           arr[sortedIndex++] = j;
           bucket[j]--;
         }
->>>>>>> dd36afc52be66fb27ce3e139e1f274cac07f400a
       }
       return arr;
     }
-<<<<<<< HEAD
-=======
   </script>
   <div>9、桶排序 --- 没懂</div>
   <div>桶排序是计数排序的升级版。它利用了函数的映射关系，高效与否的关键就在于这个映射函数的确定。桶排序 (Bucket
@@ -321,7 +310,6 @@
       }
       return arr;
     }
->>>>>>> dd36afc52be66fb27ce3e139e1f274cac07f400a
   </script>
 </body>
 
