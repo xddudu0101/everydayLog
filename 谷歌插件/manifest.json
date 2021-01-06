@@ -1,0 +1,45 @@
+{
+  "name": "Getting Started Example",
+  "version": "1.0",
+  "description": "测试一个简单的Chrome扩展demo",
+  "homepage_url": "https://www.baidu.com",
+  "permissions": [
+    "contextMenus",
+    "tabs",
+    "notifications",
+    "webRequestBlocking",
+    "http://*/*",
+    "https://*/*",
+    "activeTab",
+    "declarativeContent",
+    "storage"
+  ],
+  "icons": {
+    "16": "img/2.png",
+    "48": "img/2.png",
+    "128": "img/2.png"
+  },
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  },
+  "chrome_url_overrides": {
+    "newtab": "options.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
+  "omnibox": {
+    "keyword": "go"
+  },
+  "browser_action": {
+    "default_icon": "img/2.png",
+    "default_title": "这是一个示例Chrome插件",
+    "default_popup": "popup.html"
+  },
+  "default_locale": "zh_CN",
+  "manifest_version": 2
+}
