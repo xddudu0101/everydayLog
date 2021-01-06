@@ -8,94 +8,265 @@
 </head>
 
 <body>
-  <form action="" id="fl">
-    <input name='username' value="fdasfds" />
-    <input name='password' value="134" />
-  </form>
-
+  <div>https://www.cnblogs.com/wenruo/p/10078450.html</div>
   <script>
-    // 获取表单form元素
-    var form = document.getElementById('fl')
-    // 编写策略类
-    var VerifiPolicy = {
-      // 判断是否为空
-      isNoEmpty: function (value, errorMsg) {
-        if (value == '') {
-          return errorMsg;
+    (function () {
+      // 获取当前运行环境根对象。
+      // 在浏览器中为 self(=window)  在服务端中是 global 在一些虚拟机中是 this
+      var root = typeof self == 'object' && self === self && self ||
+        typeof global == "object" && global.global === global && global ||
+        this || {};
+      // 如果环境中已经定义了同名变量，防止对其造成覆盖，先把这个变量缓存起来。
+      var previousUnderscore = root._;
+      // 定义一些变量来存储 JS 定义的对象原型和方法，以便后续使用。
+      var ArrayProto = Array.prototype, ObjProto = Object.prototype;
+      var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
+      var push = ArrayProto.push,
+        slice = ArrayProto.slice,
+        toString = ObjProto.toString,
+        hasOwnProperty = ObjProto.hasOwnProperty;
+      var nativeIsArray = Array.isArray,
+        nativeKeys = Object.keys,
+        nativeCreate = Object.create;
+      // 根据注释，这个裸函数是用来代理原型交换的？
+      var Ctor = function () { }
+      var _ = function (obj) {
+        if (obj instanceof _) return obj;
+        if (!(this instanceof _)) return new _(obj);
+        this._wrapped = obj;
+      }
+      // 因为 node 环境中会有 exports 变量，由此判断是在浏览器还是服务端。服务端的话就导出 _ ，否则在根元素上添加 _ 变量
+      if (typeof exports != 'undefined' && !exports.nodeType) {
+        if (typeof module != 'undefined' && !module.nodeType && module.exports) {
+          exports = module.exports = _;
         }
-      },
-      // 判断最小长度
-      minLength: function (value, length, errorMsg) {
-        if (value.length < length) {
-          return errorMsg;
+        exports._ = _;
+      } else {
+        root._ = _;
+      }
+      _.VERSION = '1.9.1';
+
+      var optimizeCb = function (func, context, argCount) {
+        if (context === void 0) return func;
+        switch (argCount == null ? 3 : argCount) {
+          case 1: return function (value) {
+            return func.call(context, value);
+          };
+          // The 2-argument case is omitted(省略) because we’re not using it.
+          case 3: return function (value, index, collection) {
+            return func.call(context, value, index, collection);
+          };
+          case 4: return function (accumulator, value, index, collection) {
+            return func.call(context, accumulator, value, index, collection);
+          };
         }
-      },
-      // 判断是否为手机号
-      isMobile: function (value, errorMsg) {
-        if (!/(^1[3|5|8][0-9]{9}$)/.test(value)) {
-          return errorMsg;
+        return function () {
+          return func.apply(context, arguments);
+        };
+      }
+
+      // 其实这个函数可以简化成
+      // var optimizeCb = function (func, context) {
+      //   return function () {
+      //     return func.apply(context, arguments)
+      //   }
+      // }
+
+      // 所以说这就相当于实现了一个 bind: 
+      // optimizeCb(func, context) = func.bind(context)
+      // 那为什么要分那么多情况呢？因为 apply  比 call 慢，而且某些情况下，还会慢很多。
+
+      // 至于 void 0 是什么，void + 表达式会返回 undefined 这个算常识吧。
+      // 而不使用 undefined 因为在某些老的浏览器中 undefined 可以被赋值，出于兼容性考虑。
+
+      // builtinIteratee是一个用来判断  iteratee 是否被用户改变的临时变量，没有其他用处。
+
+      var builtinIteratee;
+      var cb = function (value, context, argCount) {
+        // 如果  _.iteratee 被修改就调用修改后的函数
+        if (_.iteratee !== builtinIteratee) return _.iteratee(value, context);
+        // 如果  value == null 就返回  _.identity 一个传入什么就返回什么的函数
+        if (value == null) return _.identity; // _.identity 函数: value => value
+        // 如果 value 是函数 就返回  optimizeCb(value, context, argCount) 也就是 value.bind(context) 
+        if (_.isFunction(value)) return optimizeCb(value, context, argCount);
+        // 如果 value 是对象 且不是数组 就返回  _.matcher(value) 
+        if (_.isObject(value) && !_.isArray(value)) return _.matcher(value);
+        // 以上都不符合就返回 _.property(value); 
+        return _.property(value);
+      }
+      // _.iteratee() 是一个函数 默认返回 cb
+      _.iteratee = builtinIteratee = function (value, context) {
+        return cb(value, context, Infinity);
+      };
+      // isMatch 就是判断 attrs 中的 key 是否在 object 中都存在且对应的值都相等
+      _.isMatch = function (object, attrs) {
+        // keys 相当于 Object.keys
+        var keys = _.keys(attrs), length = keys.length;
+        if (object == null) return !length;
+        var obj = Object(object);
+        for (var i = 0; i < length; i++) {
+          var key = keys[i];
+          if (attrs[key] !== obj[key] || !(key in obj)) return false;
+        }
+        return true;
+      };
+      // _.matcher 就是设定 attrs 返回函数。返回的函数传入 obj 看其是否符合 attrs
+      _.matcher = _.matches = function (attrs) {
+        // extendOwn看名字是一个扩展对象的函数
+        attrs = _.extendOwn({}, attrs);
+        return function (obj) {
+          return _.isMatch(obj, attrs);
+        };
+      };
+      // e.g.
+      var isZhangsan = _.matcher({ firstname: 'san', lastname: 'zhang' });
+
+      console.log(isZhangsan({ firstname: 'san', lastname: 'zhang', age: 55 })); // true
+
+      console.log(isZhangsan({ firstname: 'si', lastname: 'zhang' })); // false
+
+      var shallowProperty = function (key) {
+        return function (obj) {
+          return obj == null ? void 0 : obj[key];
+        };
+      };
+      var deepGet = function (obj, path) {
+        var length = path.length;
+        for (var i = 0; i < length; i++) {
+          if (obj == null) return void 0;
+          obj = obj[path[i]];
+        }
+        return length ? obj : void 0;
+      };
+
+      // 如果传入的不是数组，就返回获取对象属性path的值的函数，如果传入一个数组，就返回获取对象属性[path]对应的值的函数。
+      _.property = function (path) {
+        if (!_.isArray(path)) {
+          return shallowProperty(path);
+        }
+        return function (obj) {
+          return deepGet(obj, path);
+        };
+      };
+
+      // 相当于 ES6 的剩余参数，从 startIndex 开始的所有参数当做一个数组传入。分情况使用 call 还是上面提到的效率问题。
+      var restArguments = function (func, startIndex) {
+        startIndex = startIndex == null ? func.length - 1 : +startIndex;
+        return function () {
+          var length = Math.max(arguments.length - startIndex, 0),
+            rest = Array(length),
+            index = 0;
+          for (; index < length; index++) {
+            rest[index] = arguments[index + startIndex];
+          }
+          switch (startIndex) {
+            case 0: return func.call(this, rest);
+            case 1: return func.call(this, arguments[0], rest);
+            case 2: return func.call(this, arguments[0], arguments[1], rest);
+          }
+          var args = Array(startIndex + 1);
+          for (index = 0; index < startIndex; index++) {
+            args[index] = arguments[index];
+          }
+          args[startIndex] = rest;
+          return func.apply(this, args);
+        };
+      };
+
+      function sum(arr) {
+        return arr.reduce((previous, current) => {
+          return previous + current;
+        });
+      }
+
+      var restArgumentsWrapperSum = restArguments(sum);
+
+      console.log(restArgumentsWrapperSum(1, 2, 3));
+
+      // 相当于手动实现了一个  Object.create 利用了上面不知道什么用空函数 Ctor 。
+      // var nativeCreate = Object.create;
+      // Object.create(foo) 就是创建一个对象 对象的 [[Prototype]] 为 foo.prototype，这里通过 new 实现。结束之后再将 Ctor 的 protottype 赋值为 null 。
+      var baseCreate = function (prototype) {
+        if (!_.isObject(prototype)) return {};
+        if (nativeCreate) return nativeCreate(prototype);
+        Ctor.prototype = prototype;
+        var result = new Ctor;  // 相当于  new Ctor() 
+        Ctor.prototype = null;
+        return result;
+      }
+
+      // 传入一个 key 生成一个 获取对象属性 key 的值 的函数。
+      var shallowProperty = function (key) {
+        return function (obj) {
+          return obj == null ? void 0 : obj[key];
+        };
+      };
+      // e.g.
+      var getId = shallowProperty('id');
+      let obj = { id: 233, otherKey: 'who care' };
+      console.log(getId(obj)); // 233
+
+      // 使用了  Object.prototype.hasOwnProperty 判断对象 obj 是否存在属性 path
+      // var hasOwnProperty = ObjProto.hasOwnProperty;
+      var has = function (obj, path) {
+        return obj != null && hasOwnProperty.call(obj, path);
+      }
+
+      // 根据路径获取对象指定嵌套属性的值。
+      var deepGet = function (obj, path) {
+        var length = path.length;
+        for (var i = 0; i < length; i++) {
+          if (obj == null) return void 0;
+          obj = obj[path[i]];
+        }
+        return length ? obj : void 0;
+      };
+      // e.g.
+      var obj = {
+        user: {
+          name: {
+            first: 'san',
+            last: 'zhang',
+          },
+          id: 3
         }
       }
-    }
 
+      console.log(deepGet(obj, ['user', 'name', 'last'])); // zhang
 
-    // 构造函数
-    var Formvalidation = function (VerifiPolicy) {
-      // 保存策略对象
-      this.strategies = VerifiPolicy;
-      // 验证缓存
-      this.validationFns = [];
-    }
-    // add 方法
-    Formvalidation.prototype.add = function (dom, rule, errorMsg) {
+      // 如果一个对象有属性  length ，属性值为数字且在 [0, 2^53-1] 之间，则判断这个对象为类数组。
+      // 类数组常见的有 arguments、HTML Collection，数组也是类数组。
+      var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
+      var getLength = shallowProperty('length');
+      var isArrayLike = function (collection) {
+        var length = getLength(collection);
+        return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
+      };
 
-      var ary = rule.split(':');
-      var arg = [];
-      var self = this;
-      this.validationFns.push(function () {
-        arg = [];    // 重置参数
-        var ruleName = ary[0];    // 策略对象方法名
-
-        // 组装参数
-        arg.push(dom.value);
-        if (ary[1]) {
-          arg.push(ary[1]);
+      // 集合相关函数
+      _.each = _.forEach = function (obj, iteratee, context) {
+        // 首先将 iteratee 的 this 绑定到 context （如果 context 存在的话
+        iteratee = optimizeCb(iteratee, context);
+        var i, length;
+        if (isArrayLike(obj)) {
+          // 如果 obj 是类数组 对 obj[0 ... obj.lenght-1] 执行 iteratee
+          for (i = 0, length = obj.length; i < length; i++) {
+            iteratee(obj[i], i, obj)
+          }
+        } else {
+          // 否则获取 obj 属性的集合 然后进行操作
+          var keys = _.keys(obj);
+          for (i = 0, length = keys.length; i < length; i++) {
+            iteratee(obj[keys[i]], keys[i], obj);
+          }
         }
-        arg.push(errorMsg);
+        return obj;
+      };
 
-        // 调用策略函数
-        console.log('return返回值----', self.strategies[ruleName].apply(dom, arg))
-        return self.strategies[ruleName].apply(dom, arg);
-      });
-    }
-    // 开始验证
-    Formvalidation.prototype.start = function () {
-      console.log('this.validationFns', i, this.validationFns[i])
-      for (var i = 0; ; i++) {
-        var msg = this.validationFns[i]();
-        if (msg) {
-          return msg;
-        }
-      }
-    }
-    // 创建表单校验实例
-    var validation = new Formvalidation(VerifiPolicy)
 
-    // 编写校验配置, 编写环境类
-    // add方法接受三个参数，第一个参数是表单字段，第二个参数是策略对象中策略方法的名字，
-    // 第三个参数是验证未通过的错误信息。
-    validation.add(form.username, 'isNoEmpty', '用户名不能为空');
-    validation.add(form.password, 'minLength: 6', '密码长度不能小于6个字符');
 
-    // 开始校验，并接收错误信息
-    var errorMsg = validation.start();
 
-    // 如果有错误信息输出，说明校验未通过
-    if (errorMsg) {
-      alert('errorMsg----' + errorMsg)
-      // return false;
-    }
-
+    }())
   </script>
 </body>
 
